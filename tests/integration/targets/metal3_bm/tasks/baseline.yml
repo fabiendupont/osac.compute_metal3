@@ -1,0 +1,148 @@
+---
+# metal3_bm baseline tests
+# Tests userdata template rendering for all boot methods
+# and argument spec validation.
+
+# Test 1: Ignition userdata rendering
+- name: "Test 1: Ignition userdata rendering"
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Render ignition template
+      ansible.builtin.template:
+        src: "{{ role_path }}/templates/userdata_ignition.j2"
+        dest: /tmp/osac_test_ignition.json
+      vars:
+        role_path: "{{ playbook_dir }}/../../../../../collections/ansible_collections/osac/compute_metal3/roles/instance"
+        compute_instance_ssh_keys:
+          - "ssh-ed25519 AAAA_test_key_1 user@test"
+          - "ssh-rsa AAAA_test_key_2 ci@test"
+        compute_instance_user_data: ""
+
+    - name: Read rendered ignition
+      ansible.builtin.slurp:
+        path: /tmp/osac_test_ignition.json
+      register: ignition_content
+
+    - name: Parse ignition JSON
+      ansible.builtin.set_fact:
+        ignition_data: "{{ ignition_content.content | b64decode | from_json }}"
+
+    - name: Verify ignition contains SSH keys
+      ansible.builtin.assert:
+        that:
+          - ignition_data.passwd is defined
+          - ignition_data.passwd.users | length > 0
+          - "'ssh-ed25519 AAAA_test_key_1' in (ignition_data.passwd.users[0].sshAuthorizedKeys | join(' '))"
+          - "'ssh-rsa AAAA_test_key_2' in (ignition_data.passwd.users[0].sshAuthorizedKeys | join(' '))"
+        fail_msg: "Ignition template missing SSH keys"
+
+# Test 2: Cloud-init userdata rendering
+- name: "Test 2: Cloud-init userdata rendering"
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Render cloud-init template
+      ansible.builtin.template:
+        src: "{{ role_path }}/templates/userdata_cloud-init.j2"
+        dest: /tmp/osac_test_cloudinit.yaml
+      vars:
+        role_path: "{{ playbook_dir }}/../../../../../collections/ansible_collections/osac/compute_metal3/roles/instance"
+        compute_instance_ssh_keys:
+          - "ssh-ed25519 AAAA_test_key_1 user@test"
+        compute_instance_user_data: |
+          hostname: test-node
+
+    - name: Read rendered cloud-init
+      ansible.builtin.slurp:
+        path: /tmp/osac_test_cloudinit.yaml
+      register: cloudinit_content
+
+    - name: Parse cloud-init
+      ansible.builtin.set_fact:
+        cloudinit_text: "{{ cloudinit_content.content | b64decode }}"
+
+    - name: Verify cloud-init contains SSH keys
+      ansible.builtin.assert:
+        that:
+          - "'ssh-ed25519 AAAA_test_key_1' in cloudinit_text"
+        fail_msg: "Cloud-init template missing SSH keys"
+
+    - name: Verify cloud-init contains user data
+      ansible.builtin.assert:
+        that:
+          - "'hostname: test-node' in cloudinit_text"
+        fail_msg: "Cloud-init template missing user data"
+
+# Test 3: Kickstart userdata rendering
+- name: "Test 3: Kickstart userdata rendering"
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Render kickstart template
+      ansible.builtin.template:
+        src: "{{ role_path }}/templates/userdata_kickstart.j2"
+        dest: /tmp/osac_test_kickstart.cfg
+      vars:
+        role_path: "{{ playbook_dir }}/../../../../../collections/ansible_collections/osac/compute_metal3/roles/instance"
+        compute_instance_ssh_keys:
+          - "ssh-ed25519 AAAA_test_key_1 user@test"
+          - "ssh-rsa AAAA_test_key_2 ci@test"
+
+    - name: Read rendered kickstart
+      ansible.builtin.slurp:
+        path: /tmp/osac_test_kickstart.cfg
+      register: kickstart_content
+
+    - name: Parse kickstart
+      ansible.builtin.set_fact:
+        kickstart_text: "{{ kickstart_content.content | b64decode }}"
+
+    - name: Verify kickstart contains SSH keys
+      ansible.builtin.assert:
+        that:
+          - "'ssh-ed25519 AAAA_test_key_1' in kickstart_text"
+          - "'ssh-rsa AAAA_test_key_2' in kickstart_text"
+        fail_msg: "Kickstart template missing SSH keys"
+
+    - name: Verify kickstart creates .ssh directory
+      ansible.builtin.assert:
+        that:
+          - "'mkdir -p /root/.ssh' in kickstart_text"
+        fail_msg: "Kickstart template missing mkdir for .ssh"
+
+    - name: Verify kickstart sets permissions
+      ansible.builtin.assert:
+        that:
+          - "'chmod 700 /root/.ssh' in kickstart_text"
+          - "'chmod 600 /root/.ssh/authorized_keys' in kickstart_text"
+        fail_msg: "Kickstart template missing permission settings"
+
+# Test 4: Argument spec validation
+- name: "Test 4: Argument spec validation"
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Validate argument spec accepts valid input
+      ansible.builtin.include_role:
+        name: osac.compute_metal3.instance
+        tasks_from: status.yaml
+      vars:
+        compute_instance_hosts:
+          - inventory_hostname: test-host-01
+        compute_instance_image:
+          source_type: registry
+          source_ref: "quay.io/test/rhel:9.6"
+          boot_method: ignition
+          checksum: "sha256:abc123"
+        compute_instance_ssh_keys:
+          - "ssh-ed25519 AAAA_test user@test"
+        compute_instance_subnet: test-subnet
+        compute_instance_user_data: ""
+        compute_instance_class:
+          hardwareType: baremetal
+          coresFixed: 96

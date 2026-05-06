@@ -1,0 +1,49 @@
+---
+# metal3_bm override test — verify template rendering with different inputs
+
+- name: "Override: Multiple SSH keys and custom user data"
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Clear override log
+      ansible.builtin.file:
+        path: /tmp/osac_test_overrides.log
+        state: absent
+
+    - name: Create override log
+      ansible.builtin.file:
+        path: /tmp/osac_test_overrides.log
+        state: touch
+
+    - name: Render ignition with multiple keys
+      ansible.builtin.template:
+        src: "{{ role_path }}/templates/userdata_ignition.j2"
+        dest: /tmp/osac_test_ignition_override.json
+      vars:
+        role_path: "{{ playbook_dir }}/../../../../../collections/ansible_collections/osac/compute_metal3/roles/instance"
+        compute_instance_ssh_keys:
+          - "ssh-ed25519 AAAA_key_1 admin@prod"
+          - "ssh-rsa AAAA_key_2 deploy@ci"
+          - "ecdsa-sha2-nistp256 AAAA_key_3 monitor@ops"
+        compute_instance_user_data: ""
+
+    - name: Read rendered ignition
+      ansible.builtin.slurp:
+        path: /tmp/osac_test_ignition_override.json
+      register: ignition_override
+
+    - name: Parse and verify all 3 keys present
+      ansible.builtin.set_fact:
+        ignition_data: "{{ ignition_override.content | b64decode | from_json }}"
+
+    - name: Assert all keys rendered
+      ansible.builtin.assert:
+        that:
+          - ignition_data.passwd.users[0].sshAuthorizedKeys | length == 3
+        fail_msg: "Expected 3 SSH keys, got {{ ignition_data.passwd.users[0].sshAuthorizedKeys | length }}"
+
+    - name: Log override success
+      ansible.builtin.lineinfile:
+        path: /tmp/osac_test_overrides.log
+        line: "metal3_bm_template_override"
