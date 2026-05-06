@@ -1,0 +1,18 @@
+---
+- name: Delete Metal3 compute instance
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - osac.service
+    - osac.compute_metal3
+
+  tasks:
+    - name: Display resource information
+      ansible.builtin.debug:
+        msg:
+          - "ComputeInstance: {{ osac_resource.metadata.name }}"
+
+    - name: Call the provider role
+      ansible.builtin.include_role:
+        name: osac.compute_metal3.instance
+        tasks_from: delete

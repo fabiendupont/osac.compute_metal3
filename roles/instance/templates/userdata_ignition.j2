@@ -1,0 +1,9 @@
+{
+  "ignition": { "version": "3.4.0" },
+  "passwd": {
+    "users": [{
+      "name": "core",
+      "sshAuthorizedKeys": {{ compute_instance_ssh_keys | to_json }}
+    }]
+  }
+}

@@ -1,0 +1,83 @@
+---
+# Metal3 bare-metal provisioning
+- name: Create BareMetalHost CR for each host
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: metal3.io/v1alpha1
+      kind: BareMetalHost
+      metadata:
+        name: "{{ item.inventory_hostname }}"
+        namespace: "{{ metal3_namespace | default('openshift-machine-api') }}"
+      spec:
+        online: true
+        bootMACAddress: "{{ item.boot_mac_address }}"
+        bmc:
+          address: "{{ item.bmc_address }}"
+          credentialsName: "{{ item.bmc_credentials_secret }}"
+        image:
+          url: "{{ compute_instance_image.source_ref }}"
+          checksum: "{{ compute_instance_image.checksum | default(omit) }}"
+        rootDeviceHints:
+          deviceName: "{{ item.root_device | default('/dev/nvme0n1') }}"
+        userData:
+          name: "{{ item.inventory_hostname }}-userdata"
+          namespace: "{{ metal3_namespace | default('openshift-machine-api') }}"
+  loop: "{{ compute_instance_hosts }}"
+  loop_control:
+    label: "{{ item.inventory_hostname }}"
+
+- name: Generate OS configuration secret
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ item.inventory_hostname }}-userdata"
+        namespace: "{{ metal3_namespace | default('openshift-machine-api') }}"
+      type: Opaque
+      stringData:
+        userData: "{{ lookup('template', 'userdata_' + compute_instance_image.boot_method + '.j2') }}"
+  loop: "{{ compute_instance_hosts }}"
+  loop_control:
+    label: "{{ item.inventory_hostname }}"
+
+- name: Wait for BareMetalHost provisioning
+  kubernetes.core.k8s_info:
+    api_version: metal3.io/v1alpha1
+    kind: BareMetalHost
+    name: "{{ item.inventory_hostname }}"
+    namespace: "{{ metal3_namespace | default('openshift-machine-api') }}"
+  register: _bmh_status
+  until: _bmh_status.resources[0].status.provisioning.state | default('') == 'provisioned'
+  retries: "{{ metal3_provision_retries | default(60) }}"
+  delay: "{{ metal3_provision_delay | default(30) }}"
+  loop: "{{ compute_instance_hosts }}"
+  loop_control:
+    label: "{{ item.inventory_hostname }}"
+
+- name: Create NVLink partition (conditional)
+  nvidia.nmx.partition:
+    name: "tenant-{{ compute_instance_tenant | default('unknown') }}"
+    members: "{{ item.gpu_uuids }}"
+    state: present
+  loop: "{{ compute_instance_hosts | selectattr('gpu_uuids', 'defined') | list }}"
+  loop_control:
+    label: "{{ item.inventory_hostname }}"
+  when: compute_instance_class.capabilities.gpus is defined
+
+- name: Create InfiniBand partition (conditional)
+  nvidia.ufm.pkey:
+    pkey: "{{ compute_instance_tenant | default('0x0001') }}"
+    guids: "{{ item.ib_guids }}"
+    state: present
+  loop: "{{ compute_instance_hosts | selectattr('ib_guids', 'defined') | list }}"
+  loop_control:
+    label: "{{ item.inventory_hostname }}"
+  when: item.ib_guids is defined
+
+- name: Report provisioned state
+  ansible.builtin.set_fact:
+    compute_instance_state: "RUNNING"
+    compute_instance_ip_address: "{{ _bmh_status.resources[0].status.hardware.nics[0].ip | default('') }}"

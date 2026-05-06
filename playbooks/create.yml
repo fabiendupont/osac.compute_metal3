@@ -1,0 +1,30 @@
+---
+- name: Create Metal3 compute instance
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - osac.service
+    - osac.compute_metal3
+
+  pre_tasks:
+    - name: Select hosts for compute instance
+      ansible.builtin.include_role:
+        name: osac.service.select_hosts
+      vars:
+        select_hosts_class: "{{ osac_resource.spec.computeInstanceClass }}"
+        select_hosts_count: 1
+        select_hosts_region: "{{ osac_resource.spec.region | default(omit) }}"
+
+  tasks:
+    - name: Display resource information
+      ansible.builtin.debug:
+        msg:
+          - "ComputeInstance: {{ osac_resource.metadata.name }}"
+          - "Selected hosts: {{ select_hosts_result | map(attribute='inventory_hostname') | list }}"
+
+    - name: Call the provider role
+      ansible.builtin.include_role:
+        name: osac.compute_metal3.instance
+        tasks_from: create
+      vars:
+        compute_instance_hosts: "{{ select_hosts_result }}"

@@ -1,0 +1,63 @@
+---
+argument_specs:
+  main:
+    short_description: Metal3 bare-metal provisioning template role
+    options:
+      compute_instance_hosts:
+        type: list
+        required: true
+        description: Pre-selected hosts from select_hosts role
+      compute_instance_image:
+        type: dict
+        required: true
+        description: Resolved Image with source_ref, boot_method, and checksum
+      compute_instance_ssh_keys:
+        type: list
+        required: true
+        description: List of SSH public key strings
+      compute_instance_subnet:
+        type: str
+        required: false
+        description: Subnet reference for network attachment
+      compute_instance_security_groups:
+        type: list
+        required: false
+        description: Security group references
+      compute_instance_user_data:
+        type: str
+        required: false
+        description: User data string
+      compute_instance_class:
+        type: dict
+        required: false
+        description: ComputeInstanceClass capabilities
+      compute_instance_tenant:
+        type: str
+        required: false
+        default: ""
+        description: Tenant ID for NVLink/InfiniBand partition naming
+      metal3_namespace:
+        type: str
+        required: false
+        default: openshift-machine-api
+        description: Namespace for BareMetalHost resources
+      metal3_provision_retries:
+        type: int
+        required: false
+        default: 60
+        description: Number of retries when waiting for BareMetalHost provisioning
+      metal3_provision_delay:
+        type: int
+        required: false
+        default: 30
+        description: Delay in seconds between provisioning status checks
+      metal3_deprovision_retries:
+        type: int
+        required: false
+        default: 30
+        description: Number of retries when waiting for BareMetalHost deprovisioning
+      metal3_deprovision_delay:
+        type: int
+        required: false
+        default: 30
+        description: Delay in seconds between deprovisioning status checks

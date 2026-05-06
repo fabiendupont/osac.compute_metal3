@@ -1,0 +1,8 @@
+#cloud-config
+ssh_authorized_keys:
+{% for key in compute_instance_ssh_keys %}
+  - {{ key }}
+{% endfor %}
+{% if compute_instance_user_data is defined and compute_instance_user_data %}
+{{ compute_instance_user_data }}
+{% endif %}

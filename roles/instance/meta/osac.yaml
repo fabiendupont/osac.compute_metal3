@@ -1,0 +1,7 @@
+title: Metal3 Bare-Metal ComputeInstance Template
+description: >
+  Provisions bare-metal compute instances using BareMetalHost custom resources
+  via Metal3/Ironic, with NVLink and InfiniBand partition management for
+  GPU-accelerated deployments.
+
+template_type: compute_instance

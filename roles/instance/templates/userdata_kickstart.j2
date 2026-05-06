@@ -1,0 +1,8 @@
+%post
+mkdir -p /root/.ssh
+{% for key in compute_instance_ssh_keys %}
+echo '{{ key }}' >> /root/.ssh/authorized_keys
+{% endfor %}
+chmod 700 /root/.ssh
+chmod 600 /root/.ssh/authorized_keys
+%end
