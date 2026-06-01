@@ -1,7 +1,7 @@
 ---
 argument_specs:
   main:
-    short_description: Metal3 bare-metal provisioning template role
+    short_description: Metal3 bare-metal provisioning
     options:
       compute_instance_hosts:
         type: list
@@ -41,23 +41,3 @@ argument_specs:
         required: false
         default: openshift-machine-api
         description: Namespace for BareMetalHost resources
-      metal3_provision_retries:
-        type: int
-        required: false
-        default: 60
-        description: Number of retries when waiting for BareMetalHost provisioning
-      metal3_provision_delay:
-        type: int
-        required: false
-        default: 30
-        description: Delay in seconds between provisioning status checks
-      metal3_deprovision_retries:
-        type: int
-        required: false
-        default: 30
-        description: Number of retries when waiting for BareMetalHost deprovisioning
-      metal3_deprovision_delay:
-        type: int
-        required: false
-        default: 30
-        description: Delay in seconds between deprovisioning status checks

@@ -14,5 +14,4 @@
 
     - name: Call the provider role
       ansible.builtin.include_role:
-        name: osac.compute_metal3.instance
-        tasks_from: delete
+        name: osac.compute_metal3.instance.delete.main

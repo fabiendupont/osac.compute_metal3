@@ -14,7 +14,7 @@
         src: "{{ role_path }}/templates/userdata_ignition.j2"
         dest: /tmp/osac_test_ignition.json
       vars:
-        role_path: "{{ playbook_dir }}/../../../../../collections/ansible_collections/osac/compute_metal3/roles/instance"
+        role_path: "{{ playbook_dir }}/../../../../../collections/ansible_collections/osac/compute_metal3/roles/instance.create.main"
         compute_instance_ssh_keys:
           - "ssh-ed25519 AAAA_test_key_1 user@test"
           - "ssh-rsa AAAA_test_key_2 ci@test"
@@ -49,7 +49,7 @@
         src: "{{ role_path }}/templates/userdata_cloud-init.j2"
         dest: /tmp/osac_test_cloudinit.yaml
       vars:
-        role_path: "{{ playbook_dir }}/../../../../../collections/ansible_collections/osac/compute_metal3/roles/instance"
+        role_path: "{{ playbook_dir }}/../../../../../collections/ansible_collections/osac/compute_metal3/roles/instance.create.main"
         compute_instance_ssh_keys:
           - "ssh-ed25519 AAAA_test_key_1 user@test"
         compute_instance_user_data: |
@@ -87,7 +87,7 @@
         src: "{{ role_path }}/templates/userdata_kickstart.j2"
         dest: /tmp/osac_test_kickstart.cfg
       vars:
-        role_path: "{{ playbook_dir }}/../../../../../collections/ansible_collections/osac/compute_metal3/roles/instance"
+        role_path: "{{ playbook_dir }}/../../../../../collections/ansible_collections/osac/compute_metal3/roles/instance.create.main"
         compute_instance_ssh_keys:
           - "ssh-ed25519 AAAA_test_key_1 user@test"
           - "ssh-rsa AAAA_test_key_2 ci@test"
@@ -129,7 +129,7 @@
   tasks:
     - name: Validate argument spec accepts valid input
       ansible.builtin.include_role:
-        name: osac.compute_metal3.instance
+        name: osac.compute_metal3.instance.create.main
         tasks_from: status.yaml
       vars:
         compute_instance_hosts:

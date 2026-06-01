@@ -1,0 +1,37 @@
+resource_type: ComputeInstance
+event: Create
+phase: main
+priority: 100
+failure_policy: Fail
+
+title: Metal3 Bare-Metal ComputeInstance
+description: >
+  Provisions bare-metal compute instances using BareMetalHost custom resources
+  via Metal3/Ironic, with NVLink and InfiniBand partition management for
+  GPU-accelerated deployments.
+
+parameters:
+  - name: compute_instance_hosts
+    type: list
+    required: true
+    description: Pre-selected hosts from select_hosts role
+  - name: compute_instance_image
+    type: dict
+    required: true
+    description: Resolved Image with source_ref, boot_method, and checksum
+  - name: compute_instance_ssh_keys
+    type: list
+    required: true
+    description: List of SSH public key strings
+  - name: compute_instance_class
+    type: dict
+    required: false
+    description: ComputeInstanceClass capabilities
+
+outputs:
+  - name: compute_instance_state
+    type: string
+    description: Instance state (RUNNING)
+  - name: compute_instance_ip_address
+    type: string
+    description: Primary IP address of provisioned host

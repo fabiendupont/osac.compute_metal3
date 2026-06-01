@@ -1,0 +1,21 @@
+resource_type: ComputeInstance
+event: Delete
+phase: main
+priority: 100
+failure_policy: Fail
+
+parameters:
+  - name: compute_instance_hosts
+    type: list
+    required: true
+    description: Hosts to deprovision
+  - name: compute_instance_class
+    type: dict
+    required: false
+    description: ComputeInstanceClass capabilities
+  - name: compute_instance_tenant
+    type: string
+    required: false
+    description: Tenant ID for NVLink/InfiniBand partition cleanup
+
+outputs: []

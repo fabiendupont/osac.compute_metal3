@@ -1,0 +1,23 @@
+---
+argument_specs:
+  main:
+    short_description: Metal3 bare-metal deprovisioning
+    options:
+      compute_instance_hosts:
+        type: list
+        required: true
+        description: Hosts to deprovision
+      compute_instance_class:
+        type: dict
+        required: false
+        description: ComputeInstanceClass capabilities
+      compute_instance_tenant:
+        type: str
+        required: false
+        default: ""
+        description: Tenant ID for NVLink/InfiniBand partition cleanup
+      metal3_namespace:
+        type: str
+        required: false
+        default: openshift-machine-api
+        description: Namespace for BareMetalHost resources

@@ -24,7 +24,6 @@
 
     - name: Call the provider role
       ansible.builtin.include_role:
-        name: osac.compute_metal3.instance
-        tasks_from: create
+        name: osac.compute_metal3.instance.create.main
       vars:
         compute_instance_hosts: "{{ select_hosts_result }}"
