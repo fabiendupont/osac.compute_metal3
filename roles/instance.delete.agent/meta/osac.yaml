@@ -1,0 +1,18 @@
+resource_type: ComputeInstance
+event: Delete
+phase: agent
+priority: 100
+failure_policy: Fail
+
+title: Agent-Based Bare-Metal Deprovisioning
+description: >
+  Deprovisions agent-based bare-metal hosts, cleaning up Ironic state.
+  Upstream role: bm_host_agent_deprovisioning.
+
+parameters:
+  - name: compute_instance_hosts
+    type: list
+    required: true
+    description: Hosts to deprovision
+
+outputs: []

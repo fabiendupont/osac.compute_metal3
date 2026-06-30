@@ -1,0 +1,8 @@
+---
+# Stub: agent-based bare-metal deprovisioning.
+# Upstream implementation: osac-aap bm_host_agent_deprovisioning
+- name: Agent-based deprovisioning placeholder
+  ansible.builtin.debug:
+    msg: >
+      Agent-based deprovisioning not yet implemented in standalone collection.
+      See upstream osac-aap role bm_host_agent_deprovisioning.

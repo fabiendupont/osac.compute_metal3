@@ -1,0 +1,8 @@
+---
+# Stub: private network attachment for bare-metal hosts.
+# Upstream implementations: osac-aap bm_host_private_network, bm_private_network
+- name: Network attachment placeholder
+  ansible.builtin.debug:
+    msg: >
+      Host network attachment not yet implemented in standalone collection.
+      See upstream osac-aap roles bm_host_private_network and bm_private_network.

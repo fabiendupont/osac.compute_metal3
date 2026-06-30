@@ -1,0 +1,33 @@
+resource_type: ComputeInstance
+event: Create
+phase: agent
+priority: 100
+failure_policy: Fail
+
+title: Agent-Based Bare-Metal Provisioning
+description: >
+  Provisions bare-metal hosts using agent-based images via OpenStack Ironic.
+  Requires hostClass 'openstack' and networkClass 'openstack'.
+  Upstream role: bm_host_agent_provisioning.
+
+parameters:
+  - name: compute_instance_hosts
+    type: list
+    required: true
+    description: Pre-selected hosts from select_hosts role
+  - name: compute_instance_image
+    type: dict
+    required: true
+    description: Resolved Image with source_ref and boot_method
+  - name: compute_instance_ssh_keys
+    type: list
+    required: true
+    description: List of SSH public key strings
+
+outputs:
+  - name: compute_instance_state
+    type: string
+    description: Instance state (RUNNING)
+  - name: compute_instance_ip_address
+    type: string
+    description: Primary IP address of provisioned host

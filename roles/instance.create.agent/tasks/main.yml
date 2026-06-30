@@ -1,0 +1,8 @@
+---
+# Stub: agent-based bare-metal provisioning via OpenStack Ironic.
+# Upstream implementation: osac-aap bm_host_agent_provisioning
+- name: Agent-based provisioning placeholder
+  ansible.builtin.debug:
+    msg: >
+      Agent-based provisioning not yet implemented in standalone collection.
+      See upstream osac-aap role bm_host_agent_provisioning.

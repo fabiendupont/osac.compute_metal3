@@ -1,0 +1,5 @@
+internal: true
+description: >
+  Internal helper for attaching a bare-metal host to a private network.
+  OpenStack-specific; delegates to massopencloud.esi.l2.
+  Upstream roles: bm_host_private_network, bm_private_network.
